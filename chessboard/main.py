@@ -160,10 +160,13 @@ class ChessboardDemo(ShowBase):
         temp = self.pieces[fr]
         self.pieces[fr] = self.pieces[to]
         self.pieces[to] = temp
-        if self.pieces[fr]:
+        if self.pieces[fr] and (fr != to):
+            # removes the piece
+            self.pieces[fr].remove()
+            self.pieces[fr] = None
             #self.pieces[fr].square = fr
             #self.pieces[fr].obj.setPos(SquarePos(fr))
-            self.pieces[fr].remove()
+            
         if self.pieces[to]:
             self.pieces[to].square = to
             self.pieces[to].obj.setPos(SquarePos(to))
@@ -254,6 +257,7 @@ class Piece(object):
         self.obj.reparentTo(render)
         self.obj.setColor(color)
         self.obj.setPos(SquarePos(square))
+    # Removes a piece
     def remove(self):
         self.obj.detachNode()
 
