@@ -68,6 +68,10 @@ class ChessboardDemo(ShowBase):
             text="Left-click and drag: Pick up and drag piece",
             parent=base.a2dTopLeft, align=TextNode.ALeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.16), scale=.05)
+        self.mouse2Event = OnscreenText(
+            text="Right-click and drag: Hello World!",
+            parent=base.a2dTopLeft, align=TextNode.ALeft,
+            style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.32), scale=.05)
 
         self.accept('escape', sys.exit)  # Escape quits
         self.disableMouse()  # Disble mouse camera control
@@ -157,8 +161,9 @@ class ChessboardDemo(ShowBase):
         self.pieces[fr] = self.pieces[to]
         self.pieces[to] = temp
         if self.pieces[fr]:
-            self.pieces[fr].square = fr
-            self.pieces[fr].obj.setPos(SquarePos(fr))
+            #self.pieces[fr].square = fr
+            #self.pieces[fr].obj.setPos(SquarePos(fr))
+            self.pieces[fr].remove()
         if self.pieces[to]:
             self.pieces[to].square = to
             self.pieces[to].obj.setPos(SquarePos(to))
@@ -225,6 +230,7 @@ class ChessboardDemo(ShowBase):
                     SquarePos(self.dragging))
             else:
                 # Otherwise, swap the pieces
+                print(f"swapping {self.dragging} and {self.hiSq}")
                 self.swapPieces(self.dragging, self.hiSq)
 
         # We are no longer dragging anything
@@ -248,6 +254,8 @@ class Piece(object):
         self.obj.reparentTo(render)
         self.obj.setColor(color)
         self.obj.setPos(SquarePos(square))
+    def remove(self):
+        self.obj.detachNode()
 
 
 # Classes for each type of chess piece
