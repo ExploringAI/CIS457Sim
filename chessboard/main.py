@@ -107,6 +107,21 @@ class ChessboardDemo(ShowBase):
         # For each square
         self.squares = [None for i in range(64)]
         self.pieces = [None for i in range(64)]
+        # creates a 2d array for a easier time finding valid moves (for hummans)
+        print("\nThe 8x8 board:")
+        print("  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |")
+        x = 0
+        self.board = [[8*i+j for j in range(8)] for i in range(8)]
+        for i in self.board:
+            for j in i:
+                print(j,end = " ")
+            print()
+            
+        # Represents the direction of movement
+        chessCardinals = [(1,0),(0,1),(-1,0),(0,-1)]
+        chessDiagonals = [(1,1),(-1,1),(1,-1),(-1,-1)]
+        
+        
         for i in range(64):
             # Load, parent, color, and position the model (a single square
             # polygon)
