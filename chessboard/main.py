@@ -61,19 +61,19 @@ class ChessboardDemo(ShowBase):
         # This code puts the standard title and instruction text on screen
         self.title = OnscreenText(text="Panda3D: Chess",
                                   style=1, fg=(1, 1, 1, 1), shadow=(0, 0, 0, 1),
-                                  pos=(0.8, -0.95), scale = .07)
+                                  pos=(0.9, -0.8), scale=.07)
         self.escapeEvent = OnscreenText(
             text="ESC: Quit", parent=base.a2dTopLeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.1),
-            align=TextNode.ALeft, scale = .05)
+            align=TextNode.ALeft, scale=.05)
         self.mouse1Event = OnscreenText(
             text="Left-click and drag: Pick up and drag piece",
             parent=base.a2dTopLeft, align=TextNode.ALeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.16), scale=.05)
         self.mouse2Event = OnscreenText(
-            text="Chess game made by Marko & Emilly!",
+            text="Chess game made by Marko & Emily!",
             parent=base.a2dTopLeft, align=TextNode.ALeft,
-            style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.32), scale=.05)
+            style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.22), scale=.05)
 
         self.accept('escape', sys.exit)  # Escape quits
         self.disableMouse()  # Disble mouse camera control
