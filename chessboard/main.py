@@ -9,6 +9,7 @@
 # and points straight into the scene, and see what it collides with. We pick
 # the object with the closest collision
 
+from http.client import OK
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import CollisionTraverser, CollisionNode
 from panda3d.core import CollisionHandlerQueue, CollisionRay
@@ -118,8 +119,8 @@ class ChessboardDemo(ShowBase):
             print()
             
         # Represents the direction of movement
-        chessCardinals = [(1,0),(0,1),(-1,0),(0,-1)]
-        chessDiagonals = [(1,1),(-1,1),(1,-1),(-1,-1)]
+        self.chessCardinals = [(1,0),(0,1),(-1,0),(0,-1)]    #E, S, W, N
+        self.chessDiagonals = [(1,1),(-1,1),(1,-1),(-1,-1)]  #SE, NW, SW, NE
         
         
         for i in range(64):
@@ -172,6 +173,7 @@ class ChessboardDemo(ShowBase):
 
     # This function swaps the positions of two pieces
     def swapPieces(self, fr, to):
+        print(f"Is valid move? {self.isVaidMove(self.pieces[fr], fr, to)}")
         temp = self.pieces[fr]
         self.pieces[fr] = self.pieces[to]
         self.pieces[to] = temp
@@ -185,7 +187,30 @@ class ChessboardDemo(ShowBase):
         if self.pieces[to]:
             self.pieces[to].square = to
             self.pieces[to].obj.setPos(SquarePos(to))
-
+    # is the position a valid move?
+    def isVaidMove(self, piece, currentPos, targetPos):
+        xCurrent = currentPos % 8
+        yCurrent = currentPos // 8
+        xTarget = targetPos % 8
+        yTarget = targetPos // 8
+        xDistance = xTarget - xCurrent
+        yDistance = yTarget - yCurrent
+        for move in piece.moves:
+            if (xDistance == move[0]):
+                if (yDistance == move[1]):
+                    return True
+                elif piece.limit == False and move[1] != 0 and yDistance != 0:
+                    if (yDistance % move[1] == 0 and yDistance // move[1] > 0):
+                        return True
+            elif piece.limit == False and move[0] != 0:
+                if (xDistance % move[0] == 0 and xDistance // move[0] > 0):
+                    if (yDistance == move[1]):
+                        return True
+                    elif move[1] != 0 and yDistance != 0:
+                        if (yDistance % move[1] == 0 and yDistance // move[1] > 0):
+                            return True
+        return False
+        
     def mouseTask(self, task):
         # This task deals with the highlighting and dragging based on the mouse
 
@@ -284,21 +309,33 @@ class Piece(object):
 # and then check if the destination square is acceptible during ReleasePiece
 class Pawn(Piece):
     model = "models/pawn"
+    moves = [(0,1),(1,1),(-1,1)]
+    limit = True
 
 class King(Piece):
     model = "models/king"
+    moves = [(1,0),(0,1),(-1,0),(0,-1),(1,1),(-1,1),(1,-1),(-1,-1)]
+    limit = True
 
 class Queen(Piece):
     model = "models/queen"
+    moves = [(1,0),(0,1),(-1,0),(0,-1),(1,1),(-1,1),(1,-1),(-1,-1)]
+    limit = False
 
 class Bishop(Piece):
     model = "models/bishop"
+    moves = [(1,1),(-1,1),(1,-1),(-1,-1)]
+    limit = False
 
 class Knight(Piece):
     model = "models/knight"
+    moves = [(1,0),(0,1),(-1,0),(0,-1),(1,1),(-1,1),(1,-1),(-1,-1)]
+    limit = True
 
 class Rook(Piece):
     model = "models/rook"
+    moves = [(1,0),(0,1),(-1,0),(0,-1)]
+    limit = False
 
 # Do the main initialization and start 3D rendering
 demo = ChessboardDemo()
