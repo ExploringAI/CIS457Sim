@@ -25,6 +25,7 @@ import sys
 BLACK = (0, 0, 0, 1)
 WHITE = (1, 1, 1, 1)
 HIGHLIGHT = (0, 1, 1, 1)
+VALID = (1, 1, 0, 0)
 PIECEBLACK = (.15, .15, .15, 1)
 
 # Now we define some helper functions that we will need later
@@ -58,7 +59,7 @@ class ChessboardDemo(ShowBase):
         ShowBase.__init__(self)
 
         # This code puts the standard title and instruction text on screen
-        self.title = OnscreenText(text="Panda3D: Tutorial - Mouse Picking",
+        self.title = OnscreenText(text="Panda3D: Chess",
                                   style=1, fg=(1, 1, 1, 1), shadow=(0, 0, 0, 1),
                                   pos=(0.8, -0.95), scale = .07)
         self.escapeEvent = OnscreenText(
@@ -70,7 +71,7 @@ class ChessboardDemo(ShowBase):
             parent=base.a2dTopLeft, align=TextNode.ALeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.16), scale=.05)
         self.mouse2Event = OnscreenText(
-            text="Right-click and drag: Hello World!",
+            text="Chess game made by Marko & Emilly!",
             parent=base.a2dTopLeft, align=TextNode.ALeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.32), scale=.05)
 
@@ -117,10 +118,6 @@ class ChessboardDemo(ShowBase):
             for j in i:
                 print(j,end = " ")
             print()
-            
-        # Represents the direction of movement
-        self.chessCardinals = [(1,0),(0,1),(-1,0),(0,-1)]    #E, S, W, N
-        self.chessDiagonals = [(1,1),(-1,1),(1,-1),(-1,-1)]  #SE, NW, SW, NE
         
         
         for i in range(64):
@@ -201,14 +198,17 @@ class ChessboardDemo(ShowBase):
                     return True
                 elif piece.limit == False and move[1] != 0 and yDistance != 0:
                     if (yDistance % move[1] == 0 and yDistance // move[1] > 0):
-                        return True
+                        if xDistance/yDistance == move[0]/move[1]:
+                            return True
             elif piece.limit == False and move[0] != 0:
                 if (xDistance % move[0] == 0 and xDistance // move[0] > 0):
                     if (yDistance == move[1]):
-                        return True
+                        if yDistance/xDistance == move[1]/move[0]:
+                            return True
                     elif move[1] != 0 and yDistance != 0:
                         if (yDistance % move[1] == 0 and yDistance // move[1] > 0):
-                            return True
+                            if xDistance/yDistance == move[0]/move[1]:
+                                return True
         return False
         
     def mouseTask(self, task):
@@ -216,7 +216,8 @@ class ChessboardDemo(ShowBase):
 
         # First, clear the current highlight
         if self.hiSq is not False:
-            self.squares[self.hiSq].setColor(SquareColor(self.hiSq))
+            for i in range(64):
+                self.squares[i].setColor(SquareColor(i))
             self.hiSq = False
 
         # Check to see if we can access the mouse. We need it to do anything
@@ -241,6 +242,13 @@ class ChessboardDemo(ShowBase):
                 self.pieces[self.dragging].obj.setPos(
                     PointAtZ(.5, nearPoint, nearVec))
 
+
+            # Highlight valid moves:
+            if self.dragging is not False:
+                for i in range(64):
+                    if self.isVaidMove(self.pieces[self.dragging], self.dragging, i):
+                        self.squares[i].setColor(VALID)
+
             # Do the actual collision pass (Do it only on the squares for
             # efficiency purposes)
             self.picker.traverse(self.squareRoot)
@@ -252,6 +260,9 @@ class ChessboardDemo(ShowBase):
                 # Set the highlight on the picked square
                 self.squares[i].setColor(HIGHLIGHT)
                 self.hiSq = i
+                
+
+                
 
         return Task.cont
 
@@ -268,7 +279,7 @@ class ChessboardDemo(ShowBase):
         # Make sure we really are dragging something
         if self.dragging is not False:
             # We have let go of the piece, but we are not on a square
-            if self.hiSq is False:
+            if self.hiSq is False or self.isVaidMove(self.pieces[self.dragging], self.dragging, self.hiSq) is False:
                 self.pieces[self.dragging].obj.setPos(
                     SquarePos(self.dragging))
             else:
@@ -329,7 +340,7 @@ class Bishop(Piece):
 
 class Knight(Piece):
     model = "models/knight"
-    moves = [(1,0),(0,1),(-1,0),(0,-1),(1,1),(-1,1),(1,-1),(-1,-1)]
+    moves = [(-1,2),(-2,1),(-2,-1),(-1,-2),(1,-2),(2,-1),(2,1),(1,2)]
     limit = True
 
 class Rook(Piece):
