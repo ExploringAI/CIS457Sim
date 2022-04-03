@@ -61,19 +61,19 @@ class ChessboardDemo(ShowBase):
         # This code puts the standard title and instruction text on screen
         self.title = OnscreenText(text="Panda3D: Chess",
                                   style=1, fg=(1, 1, 1, 1), shadow=(0, 0, 0, 1),
-                                  pos=(0.9, -0.8), scale=.07)
+                                  pos=(0.8, -0.95), scale = .07)
         self.escapeEvent = OnscreenText(
             text="ESC: Quit", parent=base.a2dTopLeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.1),
-            align=TextNode.ALeft, scale=.05)
+            align=TextNode.ALeft, scale = .05)
         self.mouse1Event = OnscreenText(
             text="Left-click and drag: Pick up and drag piece",
             parent=base.a2dTopLeft, align=TextNode.ALeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.16), scale=.05)
         self.mouse2Event = OnscreenText(
-            text="Chess game made by Marko & Emily!",
+            text="Chess game made by Marko & Emilly!",
             parent=base.a2dTopLeft, align=TextNode.ALeft,
-            style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.22), scale=.05)
+            style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.32), scale=.05)
 
         self.accept('escape', sys.exit)  # Escape quits
         self.disableMouse()  # Disble mouse camera control
@@ -151,6 +151,7 @@ class ChessboardDemo(ShowBase):
         for i in range(48, 56):
             # load the black pawns
             self.pieces[i] = Pawn(i, PIECEBLACK)
+            self.pieces[i].moves = [(0,-1),(1,-1),(-1,-1)]
         for i in range(8):
             # Load the special pieces for the front row and color them white
             self.pieces[i] = pieceOrder[i](i, WHITE)
@@ -170,11 +171,15 @@ class ChessboardDemo(ShowBase):
 
     # This function swaps the positions of two pieces
     def swapPieces(self, fr, to):
-        print(f"Is valid move? {self.isVaidMove(self.pieces[fr], fr, to)}")
         temp = self.pieces[fr]
         self.pieces[fr] = self.pieces[to]
         self.pieces[to] = temp
         if self.pieces[fr] and (fr != to):
+            if type(self.pieces[fr]) == type(King(-100, WHITE)):
+                self.title = OnscreenText(text="Game over!",
+                                  style=1, fg=(1, 1, 1, 1), shadow=(0, 0, 0, 1),
+                                  pos=(0.3, 0.5), scale = .3)
+            
             # removes the piece
             self.pieces[fr].remove()
             self.pieces[fr] = None
@@ -184,8 +189,27 @@ class ChessboardDemo(ShowBase):
         if self.pieces[to]:
             self.pieces[to].square = to
             self.pieces[to].obj.setPos(SquarePos(to))
+    
+    def isPieceBetween(self, move, currentPos, targetPos):
+        piece_NOT_between = True
+        xCurrent = currentPos % 8
+        yCurrent = currentPos // 8
+        print(f"Index is [{currentPos}] target is {targetPos}")
+        currentPos += move[0] + move[1]*8
+        while currentPos != targetPos and currentPos>-1 and currentPos<64:
+            print(f"Index is {currentPos} target is: {targetPos}, adding: {move[0] + move[1]*8}")
+            if self.pieces[currentPos] != None:
+                # There is a piece between
+                piece_NOT_between = False
+            currentPos += move[0] + move[1]*8
+        return piece_NOT_between
+            
+            
+    
     # is the position a valid move?
     def isVaidMove(self, piece, currentPos, targetPos):
+        valid_move = False
+            
         xCurrent = currentPos % 8
         yCurrent = currentPos // 8
         xTarget = targetPos % 8
@@ -195,21 +219,31 @@ class ChessboardDemo(ShowBase):
         for move in piece.moves:
             if (xDistance == move[0]):
                 if (yDistance == move[1]):
-                    return True
+                    valid_move = True
                 elif piece.limit == False and move[1] != 0 and yDistance != 0:
                     if (yDistance % move[1] == 0 and yDistance // move[1] > 0):
                         if xDistance/yDistance == move[0]/move[1]:
-                            return True
+                            valid_move = True
             elif piece.limit == False and move[0] != 0:
                 if (xDistance % move[0] == 0 and xDistance // move[0] > 0):
                     if (yDistance == move[1]):
                         if yDistance/xDistance == move[1]/move[0]:
-                            return True
+                            valid_move = True
                     elif move[1] != 0 and yDistance != 0:
                         if (yDistance % move[1] == 0 and yDistance // move[1] > 0):
                             if xDistance/yDistance == move[0]/move[1]:
-                                return True
-        return False
+                                valid_move = True
+            # Checks if there is a piece between where it is moving each move
+            if valid_move == True and self.pieces[currentPos].limit == False:
+                valid_move = self.isPieceBetween(move, currentPos, targetPos)
+                break    # break here
+        
+        # pieces can't move into the space occupied by a piece of their color
+        if self.pieces[targetPos] != None:
+            if self.pieces[targetPos].white == piece.white:
+                valid_move = False
+        
+        return valid_move
         
     def mouseTask(self, task):
         # This task deals with the highlighting and dragging based on the mouse
@@ -282,9 +316,12 @@ class ChessboardDemo(ShowBase):
             if self.hiSq is False or self.isVaidMove(self.pieces[self.dragging], self.dragging, self.hiSq) is False:
                 self.pieces[self.dragging].obj.setPos(
                     SquarePos(self.dragging))
+                print(f"Moving a white={self.pieces[self.dragging].white} {type(self.pieces[self.dragging])} from {self.dragging} to {self.hiSq} is invalid!")
             else:
                 # Otherwise, swap the pieces
                 print(f"swapping {self.dragging} and {self.hiSq}")
+                # sets first move to False
+                self.pieces[self.dragging].is_first_move = False
                 self.swapPieces(self.dragging, self.hiSq)
 
         # We are no longer dragging anything
@@ -308,6 +345,13 @@ class Piece(object):
         self.obj.reparentTo(render)
         self.obj.setColor(color)
         self.obj.setPos(SquarePos(square))
+        # if the color is PIECEBLACK, white is false
+        if color == PIECEBLACK:
+            self.white = False
+        else:
+            self.white = True
+        # Checks if the piece has been moved
+        self.is_first_move = False
     # Removes a piece
     def remove(self):
         self.obj.detachNode()
@@ -320,7 +364,10 @@ class Piece(object):
 # and then check if the destination square is acceptible during ReleasePiece
 class Pawn(Piece):
     model = "models/pawn"
+    #if Piece.white:
     moves = [(0,1),(1,1),(-1,1)]
+    #else:
+    #    moves = [(0,-1),(1,-1),(-1,-1)]
     limit = True
 
 class King(Piece):
