@@ -52,6 +52,7 @@ def SquareColor(i):
         return WHITE
 
 
+
 class ChessboardDemo(ShowBase):
     def __init__(self):
         # Initialize the ShowBase class from which we inherit, which will
@@ -61,19 +62,15 @@ class ChessboardDemo(ShowBase):
         # This code puts the standard title and instruction text on screen
         self.title = OnscreenText(text="Panda3D: Chess",
                                   style=1, fg=(1, 1, 1, 1), shadow=(0, 0, 0, 1),
-                                  pos=(0.9, -0.8), scale = .07)
+                                  pos=(0.8, -0.95), scale = .07)
         self.escapeEvent = OnscreenText(
             text="ESC: Quit", parent=base.a2dTopLeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.1),
             align=TextNode.ALeft, scale = .05)
         self.mouse1Event = OnscreenText(
-            text="Left-click and drag: Pick up and drag piece",
+            text="Left-click and drag: Pick up and drag piece\n\nChess game made by Marko & Emilly!\nThis is a 2 player game.",
             parent=base.a2dTopLeft, align=TextNode.ALeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.16), scale=.05)
-        self.mouse2Event = OnscreenText(
-            text="Chess game made by Marko & Emily!",
-            parent=base.a2dTopLeft, align=TextNode.ALeft,
-            style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.22), scale=.05)
 
         self.accept('escape', sys.exit)  # Escape quits
         self.disableMouse()  # Disble mouse camera control
@@ -158,6 +155,9 @@ class ChessboardDemo(ShowBase):
             # Load the special pieces for the back row and color them black
             self.pieces[i + 56] = pieceOrder[i](i + 56, PIECEBLACK)
 
+        # Keep track of whose turn it is:
+        self.is_turn_white = True
+        
         # This will represent the index of the currently highlited square
         self.hiSq = False
         # This wil represent the index of the square where currently dragged piece
@@ -313,7 +313,7 @@ class ChessboardDemo(ShowBase):
         # Make sure we really are dragging something
         if self.dragging is not False:
             # We have let go of the piece, but we are not on a square
-            if self.hiSq is False or self.isVaidMove(self.pieces[self.dragging], self.dragging, self.hiSq) is False:
+            if self.hiSq is False or self.isVaidMove(self.pieces[self.dragging], self.dragging, self.hiSq) is False or self.pieces[self.dragging].white != self.is_turn_white:
                 self.pieces[self.dragging].obj.setPos(
                     SquarePos(self.dragging))
                 print(f"Moving a white={self.pieces[self.dragging].white} {type(self.pieces[self.dragging])} from {self.dragging} to {self.hiSq} is invalid!")
@@ -323,6 +323,12 @@ class ChessboardDemo(ShowBase):
                 # sets first move to False
                 self.pieces[self.dragging].is_first_move = False
                 self.swapPieces(self.dragging, self.hiSq)
+                self.is_turn_white = not self.is_turn_white
+                if(self.is_turn_white):
+                    camera.setPosHpr(0, -12, 8, 0, -35, 0)  # Set the camera to white side
+                else:
+                    camera.setPosHpr(0, 12, 8, 180, -35, 0)  # Set the camera to black side
+
 
         # We are no longer dragging anything
         self.dragging = False
@@ -345,11 +351,11 @@ class Piece(object):
         self.obj.reparentTo(render)
         self.obj.setColor(color)
         self.obj.setPos(SquarePos(square))
-        # if the color is PIECEBLACK, white is false
+        self.white = True
+        # if the color is PIECEBLACK, set white to false
         if color == PIECEBLACK:
             self.white = False
-        else:
-            self.white = True
+            
         # Checks if the piece has been moved
         self.is_first_move = False
     # Removes a piece
