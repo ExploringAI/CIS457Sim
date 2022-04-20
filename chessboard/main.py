@@ -62,13 +62,13 @@ class ChessboardDemo(ShowBase):
         # This code puts the standard title and instruction text on screen
         self.title = OnscreenText(text="Panda3D: Chess",
                                   style=1, fg=(1, 1, 1, 1), shadow=(0, 0, 0, 1),
-                                  pos=(0.8, -0.95), scale = .07)
+                                  pos=(0.9, -0.8), scale = .07)
         self.escapeEvent = OnscreenText(
             text="ESC: Quit", parent=base.a2dTopLeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.1),
             align=TextNode.ALeft, scale = .05)
         self.mouse1Event = OnscreenText(
-            text="Left-click and drag: Pick up and drag piece\n\nChess game made by Marko & Emilly!\nThis is a 2 player game.",
+            text="Left-click and drag: Pick up and drag piece\nChess game made by Marko & Emily!\nThis is a 2 player game.",
             parent=base.a2dTopLeft, align=TextNode.ALeft,
             style=1, fg=(1, 1, 1, 1), pos=(0.06, -0.16), scale=.05)
 
@@ -323,7 +323,10 @@ class ChessboardDemo(ShowBase):
                 # sets first move to False
                 self.pieces[self.dragging].is_first_move = False
                 self.swapPieces(self.dragging, self.hiSq)
+                
+                # Changes whose turn it is
                 self.is_turn_white = not self.is_turn_white
+                # Changes the camera loaction and angle depending on whose turn it is.
                 if(self.is_turn_white):
                     camera.setPosHpr(0, -12, 8, 0, -35, 0)  # Set the camera to white side
                 else:
