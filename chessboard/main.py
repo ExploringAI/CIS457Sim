@@ -1,13 +1,9 @@
-#!/usr/bin/env python
 
-# Author: Shao Zhang and Phil Saltzman
+# Author: Marko and Emily
 # Models: Eddie Canaan
-# Last Updated: 2015-03-13
+# Last Updated: 2022-04-20
 #
-# This tutorial shows how to determine what objects the mouse is pointing to
-# We do this using a collision ray that extends from the mouse position
-# and points straight into the scene, and see what it collides with. We pick
-# the object with the closest collision
+
 
 from http.client import OK
 from direct.showbase.ShowBase import ShowBase
@@ -216,32 +212,49 @@ class ChessboardDemo(ShowBase):
         yTarget = targetPos // 8
         xDistance = xTarget - xCurrent
         yDistance = yTarget - yCurrent
+        # Go through each direction a piece can move
         for move in piece.moves:
+            # if the x distance is exactly equal to the the x move:
             if (xDistance == move[0]):
+                # if the y distance is exactly equal to the the y move:
                 if (yDistance == move[1]):
+                    # it is a valid move
                     valid_move = True
+                # else if the player is trying to move diagonally in the y direction
+                # and the piece can move more than one space at a time:
                 elif piece.limit == False and move[1] != 0 and yDistance != 0:
+                    # Checks if the ratio of x and y is valid
                     if (yDistance % move[1] == 0 and yDistance // move[1] > 0):
                         if xDistance/yDistance == move[0]/move[1]:
+                            # it is a valid move
                             valid_move = True
+            # else if the player is trying to move more than one space
+            # and the piece can move more than one space at a time:
             elif piece.limit == False and move[0] != 0:
                 if (xDistance % move[0] == 0 and xDistance // move[0] > 0):
+                    # if the y distance is exactly equal to the the y move:
                     if (yDistance == move[1]):
+                        # Checks if the ratio of x and y is valid
                         if yDistance/xDistance == move[1]/move[0]:
+                            # it is a valid move
                             valid_move = True
+                    # else if the player is trying to move diagonally in the y direction
                     elif move[1] != 0 and yDistance != 0:
                         if (yDistance % move[1] == 0 and yDistance // move[1] > 0):
+                            # Checks if the ratio of x and y is valid
                             if xDistance/yDistance == move[0]/move[1]:
+                                # it is a valid move
                                 valid_move = True
             # Checks if there is a piece between where it is moving each move
             if valid_move == True and self.pieces[currentPos].limit == False:
                 valid_move = self.isPieceBetween(move, currentPos, targetPos)
                 break    # break here
-        
+       
         # pieces can't move into the space occupied by a piece of their color
         if self.pieces[targetPos] != None:
             if self.pieces[targetPos].white == piece.white:
                 valid_move = False
+
         
         return valid_move
         
